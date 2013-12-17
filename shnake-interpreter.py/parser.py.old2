@@ -1,0 +1,86 @@
+#!/usr/bin/python
+
+from pyparsing import *
+
+space = "\t "
+comment = pythonStyleComment.suppress()
+escape = Suppress("\\")
+digit = Word(nums,exact=1)
+
+EOL = LineEnd().suppress()
+EOF = StringEnd()
+
+junk = ZeroOrMore(comment | EOL)
+
+ParserElement.setDefaultWhitespaceChars(space)
+
+# word (i.e: single argument string)
+esc_eol = escape + EOL
+esc_eof = escape + EOF
+esc_chr = escape + Regex(".")
+raw_str = Regex("[^ \t\r\n\f\v\\\\$&<>();\|\'\"`]+")
+quot_str = (QuotedString("\'", escChar='\\', multiline=True)|
+            QuotedString('\"', escChar='\\', multiline=True))
+
+word = Combine(OneOrMore(esc_chr | quot_str | raw_str | esc_eof)) | esc_eol
+
+
+## redirector (aka bash file redirectors, such as "2>&1" sequences)
+#ampersand = Literal("&")
+#file_desc = oneOf("0 1 2")
+#
+## [n]<mot
+## [n]>mot
+## [n]>>mot
+## &>mot
+## >&mot          (useless)
+## <<[-]mot
+## <<<mot
+## [n]<&mot
+## [n]>&mot
+## [n]<&chiffre-
+## [n]>&chiffre-
+## [n]<>mot
+#
+#
+#num_in = Optional(digit, default=0)
+#num_out = Optional(digit, default=1)
+##word_int = word.setParseAction(lambda tok: int(tok[0]))
+#word_int = word
+#
+#input_redir = num_in + Keyword("<") + word                 # [n]<{word}
+#output_redir = num_out +_+ Keyword(">") +_+ word               # [n]>{word}
+#addto_output = num_out + Keyword(">>") + word              # [n]>>{word}
+#out_and_err_redir = (Keyword("&>") | Keyword(">&")) + word # &>{word}
+#here_doc_input = Keyword("<<") + Optional("-") + word      # <<[-]{word}
+#
+#def FAIL(*args):
+#    #for x in args:
+#    #    print(type(x), ":", x)
+#    raise IndexError()
+#
+#here_str_input = Group(Literal("<<<") + word)             # <<<{word}
+#
+##redirector = Group(input_redir | output_redir | addto_output | out_and_err_redir |
+##              here_doc_input | here_str_input)
+##redirector = Regex("[0-2&]?(?:<|>)&?")
+#redirector = here_str_input.setFailAction(FAIL)
+#
+#
+#redirector = Group(Regex("[0-2&]?(<|>)+") + word).setResultsName('redirector')
+#
+#
+##redirector = Combine(Optional(oneOf("0 1 2 &")) + OneOrMore(oneOf("< >")) + word)
+
+
+# separators
+separator = oneOf("&& || | ;") + junk
+
+#command = Group(OneOrMore(redirector | word))
+command = Group(OneOrMore(word))
+
+pipeline = junk + (Group(command + ZeroOrMore(separator + command))) + (EOL | EOF)
+pipeline.ignore(comment)
+
+# PARSER
+PARSER = pipeline | junk

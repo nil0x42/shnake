@@ -1,0 +1,46 @@
+#!/usr/bin/python
+
+from pyparsing import *
+
+space = "\t "
+comment = pythonStyleComment.suppress()
+escape = Suppress("\\")
+digit = Word(nums,exact=1)
+
+EOL = LineEnd().suppress()
+EOF = StringEnd()
+
+junk = ZeroOrMore(comment | EOL)
+
+ParserElement.setDefaultWhitespaceChars(space)
+
+# word (i.e: single argument string)
+#esc_eol = escape + EOL
+#esc_eof = escape + EOF
+esc_eol = escape + EOL + ~EOF
+esc_eol2 = escape + EOL + (Optional(comment) | ~EOF)
+#esc_eol = escape + Literal("\n")
+#esc_eol2 = escape + Literal("\n") + Optional(comment)
+#esc_eol = escape + oneOf("\n \r\n").suppress()
+esc_chr = escape + Regex(".")
+raw_str = Regex("[^ \t\r\n\f\v\\\\$&<>();\|\'\"`]+").setName("word")
+quot_str = (QuotedString("\'", escChar='\\', multiline=True)|
+            QuotedString('\"', escChar='\\', multiline=True))
+
+word = esc_eol2 | Combine(OneOrMore(esc_chr | quot_str | raw_str | esc_eol))
+
+
+# separators
+separator = oneOf("&& || | ;") + junk
+
+
+#command = Group(OneOrMore(redirector | word))
+command = Group(OneOrMore(word))
+
+pipeline = junk + (Group(command + ZeroOrMore(separator + command))) + (EOL | EOF)
+pipeline.ignore(comment)
+
+# PARSER
+#PARSER = pipeline | junk
+PARSER = pipeline
+#PARSER.ignore(junk)
