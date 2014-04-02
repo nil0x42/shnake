@@ -6,6 +6,11 @@ a shell command interpreter, with basic operators support.
 """
 import sys, os, io
 
+from pyparsing import (ParserElement, StringEnd, LineEnd, Literal,
+                       pythonStyleComment, ZeroOrMore, Suppress,
+                       Optional, Combine, OneOrMore, Regex, oneOf,
+                       QuotedString, Group, ParseException)
+
 
 class StringLexer:
     """Bash-like string lexer based on pyparsing.
@@ -34,10 +39,6 @@ class StringLexer:
     """
 
     def __init__(self):
-        from pyparsing import (ParserElement, StringEnd, LineEnd, Literal,
-                               pythonStyleComment, ZeroOrMore, Suppress,
-                               Optional, Combine, OneOrMore, Regex, oneOf,
-                               QuotedString, Group, ParseException)
 
         ParserElement.setDefaultWhitespaceChars("\t ")
 
@@ -99,7 +100,7 @@ class StringLexer:
         try:
             result = self.LEXER.parseString(string)
 
-        except self.ParseException as error:
+        except self.parseException as error:
             index = error.loc
 
             try:
@@ -176,8 +177,8 @@ class Parser:
         self.stdout = stdout
         self.stderr = stderr
 
-        self.PS1 = "$ "
-        self.PS2 = "> "
+        self.PS1 = PS1
+        self.PS2 = PS2
 
         self.cmdfunc = cmdfunc
 
@@ -253,3 +254,6 @@ class Parser:
     def execute(self, pipeline):
         print(pipeline)
         return True
+
+
+LEXER = StringLexer().LEXER

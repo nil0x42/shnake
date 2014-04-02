@@ -7,8 +7,11 @@ The shnake library has been initially developped to correctly handle
 PhpSploit framework's shell interfaces. That being said, it was built
 in order to stand generic, and usable by any other open-source project.
 
-It extends the pretty good 'cmd' library, adding many new features, and
-a little bit new behaviors.
+- The basic part extends the pretty good 'cmd' standard library, adding many
+new features, and a few new behaviors.
+
+- If the pyparsing library is available, the shell's parseline() method
+is overidden to used the extra shnake advanced shell parser.
 
 It was built to theorically work on all 3.x python versions.
 For any bug, issue or enhancement proposal, please contact the author.
