@@ -424,7 +424,7 @@ class Cmd(cmd.Cmd):
         """Pull in 'obj' base class attributes (defaults to self).
         'filter' ads possibility to add a word prefix condition, auto
         stripped from returned elements.
-        >>> get_names(perfix='do_')
+        >>> get_names(prefix='do_')
         ['help', 'exit']
 
         """
