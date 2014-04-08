@@ -35,6 +35,7 @@ class Parser:
         """Interpret `file` data as a command line sequence.
 
         """
+        line = 0
         result = []
         buffer = LineBuffer(string)
 
@@ -45,8 +46,9 @@ class Parser:
                 if not data:
                     return result
 
+            line += 1;
             try:
-                pipeline = lexer(data[:-1])
+                pipeline = lexer(data[:-1], line=line)
                 result += pipeline
                 data = ""
                 if string is None:

@@ -5,6 +5,8 @@ a powerful bash-like string lexer.
 
 """
 
+import re
+
 
 class Lexer:
     """Bash-like string lexer based on pyparsing.
@@ -95,7 +97,7 @@ class Lexer:
         self.parseException = ParseException
 
 
-    def __call__(self, string):
+    def __call__(self, string, line=1):
         try:
             result = self.LEXER.parseString(string)
 
@@ -124,6 +126,12 @@ class Lexer:
             else:
                 err = "unexpected token %r "
                 err += str(error)[str(error).find("("):]
+                try:
+                    lineNr = int(re.findall("line:(\d+)", err)[0])
+                    lineNr += line - 1
+                    err = re.sub("line:(\d+)", "line:"+str(lineNr), err)
+                except:
+                    pass
                 raise SyntaxError(err %char)
 
             raise error

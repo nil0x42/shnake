@@ -114,12 +114,13 @@ class Shell(cmd.Cmd):
         pattern = "\x01?(\x1b\[((?:\d|;)*)([a-zA-Z]))\x02?"
         return input( re.sub(pattern, "\x01\\1\x02", prompt) )
 
-    def lex(self, string):
+
+    def lex(self, string, line=1):
         """The self.lex() method returns a list of commands, each
         of them is a list of argv.
 
         """
-        command_list = shnake_lex(string)
+        command_list = shnake_lex(string, line)
         result = []
         for command in command_list:
             command = [str(arg) for arg in command if isinstance(arg, str)]
