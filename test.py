@@ -7,19 +7,31 @@ if (sys.version_info.major < 3):
     exit('shnake library is not compatible with python < 3')
 
 # Make sure the script is not imported
-try: from __main__ import __file__
-except: exit('./debug.py cannot be imported !')
+try:
+    from __main__ import __file__
+except:
+    sys.exit('./test.py cannot be imported !')
 
 #### UNIT-TEST ####
 import shnake
-parse = shnake.Parser()
 
-if len(sys.argv) > 1:
-    file = open('/tmp/parse.test')
-else:
-    file = None
+# data = open('/tmp/parse.test', 'r').read()
+data = "ls\\\nls\nls"
 
-result = parse(file)
+print(repr(data));
+
+print(shnake.lexer.lex(data))
+
+
+# import shnake
+# parse = shnake.Parser()
+#
+# if len(sys.argv) > 1:
+#     file = open('/tmp/parse.test')
+# else:
+#     file = None
+#
+# result = parse(file)
 
 
 

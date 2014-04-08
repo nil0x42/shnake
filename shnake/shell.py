@@ -84,16 +84,17 @@ Limitations & Other changes:
 
 """
 
-import sys, re, cmd, shlex
+import re, cmd
+from .lexer import lex as shnake_lex
+from .parser import parse as shnake_parse
 
 __author__ = "nil0x42 <http://goo.gl/kb2wf>"
 
-class Cmd(cmd.Cmd):
+class Shell(cmd.Cmd):
     prompt = "cmdshell > "
     prompt_ps2 = "> "
     nocmd = "*** Unknow command: %s"
     error = "*** Error raised: %s"
-
 
     def __init__(self, completekey='tab', stdin=None, stdout=None):
         super().__init__(completekey=completekey, stdin=stdin, stdout=stdout)
@@ -112,6 +113,19 @@ class Cmd(cmd.Cmd):
         # else, fix readline length missinterpretation
         pattern = "\x01?(\x1b\[((?:\d|;)*)([a-zA-Z]))\x02?"
         return input( re.sub(pattern, "\x01\\1\x02", prompt) )
+
+    def lex(self, string):
+        """The self.lex() method returns a list of commands, each
+        of them is a list of argv.
+
+        """
+        command_list = shnake_lex(string)
+        result = []
+        for command in command_list:
+            command = [str(arg) for arg in command if isinstance(arg, str)]
+            result.append(command)
+
+        return result
 
 
     def cmdloop(self, intro=None):
@@ -218,68 +232,28 @@ class Cmd(cmd.Cmd):
         ["help"]
 
         """
-        def shlex_patch(cmd, reverse=False):
-            """Force enquoted separators to not be interpreted as such"""
-            patch_strings = ['\r\n', '\n', ';']
-            quote_chars = ['"', "'", "`"]
-            patch_strings = [(s, str(hash(s))) for s in patch_strings]
-            if not reverse:
-                for s,m in patch_strings:
-                    for q in quote_chars:
-                        cmd = cmd.replace('%s%s%s' %(q, s, q),
-                                          '%s%s%s' %(q, m, q))
-            else:
-                for s,m in patch_strings:
-                    cmd = [e.replace(m, s) for e in cmd]
-            return cmd
-
-        string = string.lstrip()
         if not interactive:
-            lines = string.splitlines()
-            string = "" if not lines else lines.pop(0)
+            # print(shnake_parse(string, lexer=self.lex))
+            return shnake_parse(string, lexer=self.lex)
 
-        # get a list of arguments from custom shlex configuration
-        # Example: ['ls','-a',';','help']
-        ok = False
-        while not ok:
+        try:
             try:
-                lex = shlex.shlex( instream=shlex_patch(string), posix=True )
-                lex.quotes += '`'
-                lex.wordchars += '$%&()*+,-./:<=>!?@[]^_{|}~'
-                lex.whitespace = ' \t'
-                arguments = list(lex)
-                open('/tmp/shlex', 'a').write(str(arguments)+"\n")
-                ok = True
-            except ValueError as e:
-                # if the last argument quotation has not be closed, assume
-                # the string is unfinished, and add a newline to it's end.
-                if str(e) == "No closing quotation":
-                    string += '\n'
-                # if a lines ends with an antislash, assume the pressed
-                # <RETURN> key as an escaped char, then just remove it.
-                elif str(e) == "No escaped character":
-                    string = string[:-1]
-                # pursue interpretation on the next line (bash like)
-                if interactive:
-                    try: string += self.raw_input( self.prompt_ps2 )
-                    except EOFError: string = ""
-                elif lines:
-                    string += lines.pop(0)
-
-        # separate arguments by commands [['ls','-a'],['help']]
-        commands = []
-        begidx = 0
-        for idx, arg in enumerate(arguments):
-            if arg in [';','\n','\r\n']:
-                new = arguments[begidx:idx]
-                commands.append(new)
-                begidx = idx + 1
-        commands.append( arguments[begidx:] ) # add last command args
-
-        for idx, cmd in enumerate(commands): # reverse the patch morph
-            commands[idx] = shlex_patch(cmd, reverse=True)
-
-        return commands
+                # print(self.lex(string))
+                return self.lex(string)
+            except SyntaxWarning as err:
+                while True:
+                    try:
+                        string += "\n" + self.raw_input(self.prompt_ps2)
+                        # print(self.lex(string));
+                        return self.lex(string)
+                    except EOFError:
+                        print('')
+                        raise err
+                    except SyntaxWarning as err:
+                        pass
+        except BaseException as e:
+            self.onexception(e)
+            return [];
 
 
     def onecmd(self, argv):
@@ -424,7 +398,7 @@ class Cmd(cmd.Cmd):
         """Pull in 'obj' base class attributes (defaults to self).
         'filter' ads possibility to add a word prefix condition, auto
         stripped from returned elements.
-        >>> get_names(prefix='do_')
+        >>> get_names(filter='do_')
         ['help', 'exit']
 
         """
