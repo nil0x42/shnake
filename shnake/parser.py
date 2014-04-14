@@ -1,6 +1,15 @@
+"""Shnake's pyparsing based shell parser
+
+The shnake parser handles multiline commands using the lexer
+
+Take a look at shell.py parserline() and lex() methods.
+
+"""
+
 import io
 from .lexer import lex as shnake_lex
 
+__author__ = "nil0x42 <http://goo.gl/kb2wf>"
 
 class LineBuffer:
     """Command line generator designed for shemu's Parser() class

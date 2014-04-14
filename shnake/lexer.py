@@ -7,6 +7,7 @@ a powerful bash-like string lexer.
 
 import re
 
+__author__ = "nil0x42 <http://goo.gl/kb2wf>"
 
 class Lexer:
     """Bash-like string lexer based on pyparsing.

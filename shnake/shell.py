@@ -234,18 +234,15 @@ class Shell(cmd.Cmd):
 
         """
         if not interactive:
-            # print(shnake_parse(string, lexer=self.lex))
             return shnake_parse(string, lexer=self.lex)
 
         try:
             try:
-                # print(self.lex(string))
                 return self.lex(string)
             except SyntaxWarning as err:
                 while True:
                     try:
                         string += "\n" + self.raw_input(self.prompt_ps2)
-                        # print(self.lex(string));
                         return self.lex(string)
                     except EOFError:
                         print('')

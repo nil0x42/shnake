@@ -15,7 +15,6 @@ except:
 #### UNIT-TEST ####
 import shnake
 
-# data = open('/tmp/parse.test', 'r').read()
 data = "ls\\\nls\nls"
 
 print(repr(data));
@@ -32,15 +31,3 @@ print(shnake.lexer.lex(data))
 #     file = None
 #
 # result = parse(file)
-
-
-
-
-
-
-### Start shell interface
-#import ui.interface
-#interface = ui.interface.Cmd()
-#interface.interpret("foo\\\nbar")
-#
-#interface.cmdloop()
