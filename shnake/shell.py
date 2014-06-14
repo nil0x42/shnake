@@ -84,7 +84,9 @@ Limitations & Other changes:
 
 """
 
-import re, cmd
+import re
+import cmd
+
 from .lexer import lex as shnake_lex
 from .parser import parse as shnake_parse
 
@@ -99,13 +101,15 @@ class Shell(cmd.Cmd):
     def __init__(self, completekey='tab', stdin=None, stdout=None):
         super().__init__(completekey=completekey, stdin=stdin, stdout=stdout)
 
-
     def raw_input(self, prompt):
         """An input() wrapper that fixes readline ansi colored prompt
         length missinterpretation by wrapping terminal ansi codes as
         "ANSI" = "\\x01ANSI\\x02".
 
         """
+        if not self.stdout.isatty():
+            return input()
+
         # if not readline, return prompt as it is
         try: import readline
         except: return input(prompt)
