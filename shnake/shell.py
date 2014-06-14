@@ -92,6 +92,7 @@ from .parser import parse as shnake_parse
 
 __author__ = "nil0x42 <http://goo.gl/kb2wf>"
 
+
 class Shell(cmd.Cmd):
     prompt = "cmdshell > "
     prompt_ps2 = "> "
@@ -111,13 +112,14 @@ class Shell(cmd.Cmd):
             return input()
 
         # if not readline, return prompt as it is
-        try: import readline
-        except: return input(prompt)
+        try:
+            __import__("readline")
+        except:
+            return input(prompt)
 
         # else, fix readline length missinterpretation
         pattern = "\x01?(\x1b\[((?:\d|;)*)([a-zA-Z]))\x02?"
-        return input( re.sub(pattern, "\x01\\1\x02", prompt) )
-
+        return input(re.sub(pattern, "\x01\\1\x02", prompt))
 
     def lex(self, string, line=1):
         """The self.lex() method returns a list of commands, each
@@ -131,7 +133,6 @@ class Shell(cmd.Cmd):
             result.append(command)
 
         return result
-
 
     def cmdloop(self, intro=None):
         """Repeatedly issue a prompt, accept input, parse an initial prefix
@@ -153,11 +154,11 @@ class Shell(cmd.Cmd):
         if intro:
             self.intro = intro
         if self.intro:
-            self.stdout.write( str(self.intro)+"\n" )
+            self.stdout.write(str(self.intro) + "\n")
 
         # start command loop
         try:
-            self.preloop() # pre command hook method
+            self.preloop()  # pre command hook method
             while True:
                 try:
                     line = self.raw_input(self.prompt)
@@ -182,10 +183,9 @@ class Shell(cmd.Cmd):
                     readline.set_completer(self.old_completer)
                 except ImportError:
                     pass
-            self.postloop() # post command hook method
+            self.postloop()  # post command hook method
 
-
-    def interpret(self, commands, precmd=None, onecmd=None, \
+    def interpret(self, commands, precmd=None, onecmd=None,
                   postcmd=None, interactive=False):
         """Interpret `commands` as a list of commands.
         `commands` can be a multi command raw string or a preformated
@@ -198,9 +198,12 @@ class Shell(cmd.Cmd):
         if isinstance(commands, str):
             commands = self.parseline(commands, interactive=interactive)
 
-        if precmd is None: precmd = self.precmd
-        if onecmd is None: onecmd = self.onecmd
-        if postcmd is None: postcmd = self.postcmd
+        if precmd is None:
+            precmd = self.precmd
+        if onecmd is None:
+            onecmd = self.onecmd
+        if postcmd is None:
+            postcmd = self.postcmd
 
         retval = 0
         for argv in commands:
@@ -214,13 +217,11 @@ class Shell(cmd.Cmd):
                 raise SystemExit(self.return_errcode(e.code))
         return self.return_errcode(retval)
 
-
     def postcmd(self, retval, argv):
         """Hook method executed just after a command dispatch is finished.
 
         """
         return retval
-
 
     def parseline(self, string, interactive=True):
         """Parse `string` into an ordered list of `argv`, each of them
@@ -255,8 +256,7 @@ class Shell(cmd.Cmd):
                         pass
         except BaseException as e:
             self.onexception(e)
-            return [];
-
+            return []
 
     def onecmd(self, argv):
         """Interpret the argument as though it had been typed in response
@@ -276,15 +276,16 @@ class Shell(cmd.Cmd):
             return self.interpret('help '+argv[0])
 
         # get command function
-        try: cmdrun = getattr(self, 'do_'+argv[0])
-        except AttributeError: cmdrun = self.default
+        try:
+            cmdrun = getattr(self, 'do_'+argv[0])
+        except AttributeError:
+            cmdrun = self.default
 
         # execute it, and handle error representation if fails:
         try:
             return cmdrun(argv)
         except BaseException as e:
             return self.onexception(e)
-
 
     def onexception(self, exception):
         """Hook method executed when a python exception is raised
@@ -317,7 +318,6 @@ class Shell(cmd.Cmd):
 
         return self.return_errcode(exception)
 
-
     def return_errcode(self, code):
         """Called by onecmd() and cmdloop() methods, to manage commands
         and instance return codes. It acts like the sys.exit method,
@@ -332,11 +332,10 @@ class Shell(cmd.Cmd):
             code = ': '.join(str(e) for e in code)
         if not isinstance(code, int):
             for line in str(code).splitlines(1):
-                self.stdout.write( self.error %line )
+                self.stdout.write(self.error % line)
             self.stdout.write("\n")
             code = 1
         return code
-
 
     def emptyline(self):
         """Called when an empty line is entered in response to the prompt.
@@ -345,7 +344,6 @@ class Shell(cmd.Cmd):
 
         """
         return
-
 
     def default(self, argv):
         """Called on an input line when the command prefix is not recognized.
@@ -356,8 +354,7 @@ class Shell(cmd.Cmd):
         """
         cmdRepr = "${!r}".format(argv[0])
         cmd = argv[0] if argv[0] == cmdRepr[2:-1] else cmdRepr
-        self.stdout.write( (self.nocmd+'\n') %cmd )
-
+        self.stdout.write((self.nocmd + '\n') % cmd)
 
     def complete(self, text, state):
         """Return the next possible completion for 'text'.
@@ -380,7 +377,7 @@ class Shell(cmd.Cmd):
                 name = None
             # if the cmd name has been entirely typed, then use it's dedicated
             # complete_*() method, or fallback to completedefault().
-            if begidx>0:
+            if begidx > 0:
                 try:
                     compfunc = getattr(self, 'complete_'+name)
                 except AttributeError:
@@ -394,7 +391,6 @@ class Shell(cmd.Cmd):
             return self.completion_matches[state]+' '
         except IndexError:
             return
-
 
     def get_names(self, obj=None, filter=''):
         """Pull in 'obj' base class attributes (defaults to self).
@@ -410,17 +406,14 @@ class Shell(cmd.Cmd):
         attrs = dir(obj.__class__)
         return [e[len(filter):] for e in attrs if e.startswith(filter)]
 
-
     def do_help(self, argv):
         'List available commands with "help" or detailed help with "help cmd".'
         argv.append('')
         super().do_help(argv[1])
 
-
     def do_exit(self, argv):
         'Leave the shell interface'
         self.stdout.write("*** Command shell left with 'exit'\n")
-
 
     def except_SystemExit(self, exception):
         """On SystemExit exceptions (aka sys.exit() call), simply
@@ -429,7 +422,6 @@ class Shell(cmd.Cmd):
 
         """
         raise exception
-
 
     def except_KeyboardInterrupt(self, exception):
         """It writes a newline, then returns its own value to keep
