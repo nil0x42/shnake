@@ -84,6 +84,7 @@ Limitations & Other changes:
 
 """
 
+import sys
 import re
 import cmd
 
@@ -94,7 +95,7 @@ __author__ = "nil0x42 <http://goo.gl/kb2wf>"
 
 
 class Shell(cmd.Cmd):
-    prompt = "cmdshell > "
+    prompt = "shnake_shell > "
     prompt_ps2 = "> "
     nocmd = "*** Unknow command: %s"
     error = "*** Error raised: %s"
@@ -414,6 +415,7 @@ class Shell(cmd.Cmd):
     def do_exit(self, argv):
         'Leave the shell interface'
         self.stdout.write("*** Command shell left with 'exit'\n")
+        sys.exit()
 
     def except_SystemExit(self, exception):
         """On SystemExit exceptions (aka sys.exit() call), simply
