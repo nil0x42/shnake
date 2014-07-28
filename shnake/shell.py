@@ -314,7 +314,11 @@ class Shell(cmd.Cmd):
 
         if isinstance(exception, BaseException):
             name = type(exception).__name__
-            name = re.sub('([A-Z][a-z])', ' \\1', name).strip()
+            # dirty special cases because finding the proper regex is boring...
+            if name == "IsADirectoryError":
+                name = "Is A Directory Error"
+            else:
+                name = re.sub('([A-Z][a-z])', ' \\1', name).strip()
             exception = (name,) + exception.args
 
         return self.return_errcode(exception)
