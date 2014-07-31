@@ -272,9 +272,6 @@ class Shell(cmd.Cmd):
         # call emptyline() if no arguments
         if not argv:
             return self.emptyline()
-        # call 'help <cmd>' when '<cmd> --help' is typed
-        if len(argv) == 2 and argv[1] == '--help':
-            return self.interpret('help '+argv[0])
 
         # get command function
         try:
