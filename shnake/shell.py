@@ -373,6 +373,8 @@ class Shell(cmd.Cmd):
         cmdRepr = "${!r}".format(argv[0])
         cmd = argv[0] if argv[0] == cmdRepr[2:-1] else cmdRepr
         self.stdout.write((self.nocmd + '\n') % cmd)
+        # standard return code on bash at `command not found` error.
+        return 127
 
     def complete(self, text, state):
         """Return the next possible completion for 'text'.
